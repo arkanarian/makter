@@ -1,0 +1,42 @@
+version: '3.3'
+
+services:
+  backend:
+    container_name: backend_makter
+    build:
+      context: ./backend
+    restart: on-failure
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/backend
+    depends_on:
+      - postrges
+      - pgadmin
+
+  postrges:
+    container_name: ${POSTGRES_CONTAINER_NAME}
+    image: postgres:12-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_SERVER: ${POSTGRES_SERVER}
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_INTERNAL_PORT}'
+
+  pgadmin:
+    container_name: pgadmin_makter
+    image: dpage/pgadmin4:latest
+    env_file:
+      - .env
+    logging:
+      driver: none
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?err}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?err}
+    ports:
+      - '8080:80'
